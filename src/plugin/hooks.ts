@@ -30,7 +30,7 @@ export class SyncHooks {
           tempTasks.push(t);
         }
 
-        const ret = task.call(this, this.meta);
+        const ret = task.call(t, this.meta);
 
         if (ret !== undefined) {
           return ret;

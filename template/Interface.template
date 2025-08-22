@@ -34,7 +34,7 @@
 %>
 import { <%=dec%> } from 'cbbutils/lib/decorator/dec';
 <%  } if (hasCheck) {%>
-import { CheckItem } from 'cbbtuils/lib/decorator/validator';
+import { CheckItem } from 'cbbutils/lib/decorator/validator';
 <% } %>
 export class <%=ModelName%> {
   <%

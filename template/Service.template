@@ -1,0 +1,37 @@
+import { Service } from 'egg';
+import { <%=ControllerName%>Delegate } from '../delegate/<%=ControllerName%>Delegate';
+<%
+  let hasReq = false;
+  const importedReq = {};
+  const importedResp = {};
+  interfaces.forEach(function(item) {
+    if (item.reqModel && !importedReq[item.reqModel.modelName]) {
+%>import { <%=item.reqModel.modelName%> } from '../extra-model/<%=item.reqModel.modelName%>';
+<%
+      if (!hasReq) {
+        hasReq = true;
+      }
+      importedReq[item.reqModel.modelName] = 1;
+    }
+
+    if (item.respModel && !importedResp[item.respModel.modelName]) {
+%>import { <%=item.respModel.modelName%> } from '../extra-model/<%=item.respModel.modelName%>';
+<%
+      importedResp[item.respModel.modelName] = 1;
+    }
+  });
+%>
+export default class <%=ControllerName%> extends Service implements <%=ControllerName%>Delegate {
+  <% interfaces.forEach(function(item) { %>
+  public <%=item.function%>(<% if(item.reqModel){ %>req: <%=item.reqModel.modelName%><%}%>):
+    Promise<<%=item.respModel.modelName%>> | <%=item.respModel.modelName%> {
+      const resp: <%=item.respModel.modelName%> = {
+        rsp200: {
+
+        },
+        status: 200
+      };
+      return resp;
+    }
+  <% }) %>
+}

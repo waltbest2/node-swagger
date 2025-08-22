@@ -1,0 +1,10 @@
+{
+    "extends": "./tsconfig",
+    "compilerOptions": {
+        "target": "es2022",
+        "outDir": "dist",
+        "module": "esnext",
+        "types": ["jest", "node"]
+    },
+    "include": ["src/**/*.spec.ts", "src/**/*.d.ts", "test/**/*.spec.ts"]
+}

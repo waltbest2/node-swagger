@@ -1,0 +1,54 @@
+<%
+  const imported = {};
+  let hasRename = false;
+  let hasUseClass = false;
+  let hasCheck = false;
+  let dec = '';
+  props.forEach(function(item) {
+    if (item.objType && item.objType !== 'Object' && !imported[item.objType] && item.objType !== ModelName) {
+%>import { <%=item.objType%> } from './<%=item.objType%>';
+<%
+  imported[item.objType] = 1;
+  }
+  if (item.rename) {
+    hasRename = true;
+  }
+  if (item.objType && item.objType !== 'Object') {
+    hasUseClass = true;
+  }
+  if (item.check) {
+    hasCheck = true;
+  }
+  });
+  if (hasUseClass) {
+    dec += '  useClass,';
+  }
+  if (hasRename) {
+    dec += ' rename,';
+  }
+  if (hasCheck) {
+    dec += ' check,';
+  }
+  if (!isInterf && props.length > 0) {
+    dec += ' inType,';
+  }
+  if (dec) {
+    dec = dec.substring(0, dec.length - 1);
+%>
+import { <%=dec%> } from 'cbbutils/lib/decorator/dec';
+<%  } if (hasCheck) {%>
+import { CheckItem } from 'cbbtuils/lib/decorator/validator';
+<% } %>
+export class <%=ModelName%> {
+  <%
+    props.forEach(function(item) {
+      if (item.desc) {
+  %>
+  <%=item.desc%><% } if (!isInterf) { %>  
+  @inType('<%=item.in || 'query'%>') <% } if (item.objType && item.objType !== 'Object') { %>
+  @useClass(<%=item.objType%>)<% } if (item.rename) { %>
+  @rename('<%=item.rename%>')<% } if (item.check) { %>
+  @check(<CheckItem><%-JSON.stringify(item.check)%>)<% } %>
+  <%-item.name%><%=item.optional%><%-item.type%><%-item.initData%>;
+  <% }) %>
+}

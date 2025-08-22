@@ -1,0 +1,11 @@
+node_modules/
+.git
+*.ts
+!*.d.ts
+*.gitkeep
+.gitignore
+.npmignore
+.travis.yml
+appveyor.yml
+package-lock.json
+tsconfig.json

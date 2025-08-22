@@ -1,0 +1,63 @@
+import { Controller } from 'egg';
+import { validateRequest } from 'node-swagger';
+import { converObjectToApi } from 'node-swagger';
+
+<% 
+  let hasReq = false;
+  const importedReq = {};
+  const importedResp = {};
+  interfaces.forEach(function(item) {
+    if (item.reqModel && !importedReq[item.reqModel.modelName]) {
+%>import { <%=item.reqModel.modelName%> } from '../extra-model/<%=item.reqModel.modelName%>';
+<%
+      if (!hasReq) {
+        hasReq = true;
+%>import { assignObj } from 'node-swagger';
+<%
+      }
+      importedReq[item.reqModel.modelName] = 1;
+    }
+
+    if (item.respModel && !importedResp[item.respModel.modelName]) {
+%>import { <%=item.respModel.modelName%> } from '../extra-model/<%=item.respModel.modelName%>';
+<%
+      importedResp[item.respModel.modelName] = 1;
+    }
+  });
+%>
+export default class <%=ControllerName%> extends Controller {
+  <% interfaces.forEach(function(item) { %>
+  public async <%=item.function%>() {
+    const { ctx } = this;
+    const isValid = validateRequest(ctx, <%-item.check%>);
+    if (!isValid) {
+      ctx.logger.error('req params error');
+      ctx.response.status = 400;
+      ctx.body = 'req params error';
+      return;
+    } else if (<any>isValid === '401') {
+      ctx.logger.error('token invalid');
+      ctx.response.status = 401;
+      ctx.body = { error_msg: 'token is invalid' };
+      return;
+    }
+    <% if (item.reqModel) { %>
+    const req: <%=item.reqModel.modelName%> = new <%=item.reqModel.modelName%>();
+    assignObj(ctx, req);
+    <% } %>
+    const resp<%=item.respModel.extraModelName%> = await ctx.service.<%=ServiceName%>.<%=item.function%>(<%=item.reqModel?'req':''%>);
+    if (resp.status) {
+      ctx.response.status= resp.status;
+      ctx.body = converObjectToApi(resp[`rsp${resp.status}`]<%- ', (<any>new ' + item.respModel.modelName + '()).$targetClass?.[`rsp${resp.status}`]'%>) || '';
+      if (resp.rspHeaders) {
+        const rspHeaders = resp.rspHeaders;
+        for (const key of Object.keys(rspHeaders)) {
+          ctx.set(key, rspHeaders[key]);
+        }
+      }
+    }
+    ctx.logger.info(`status [${resp ? resp.status : 'null'}]`); // access log
+  }
+
+  <% }) %>
+}
